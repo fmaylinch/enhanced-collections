@@ -10,5 +10,9 @@ public interface EnhancedCollection<T> extends Collection<T> {
 
     EnhancedCollection<T> filter(Predicate<T> p);
 
+    boolean anyMatch(Predicate<T> p);
+
+    boolean allMatch(Predicate<T> p);
+
     Collection<T> get();
 }

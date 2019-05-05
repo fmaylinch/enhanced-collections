@@ -52,8 +52,89 @@ public class EnhancedCollectionImpl<T> extends AbstractCollection<T> implements 
     }
 
     @Override
+    public boolean anyMatch(Predicate<T> p) {
+
+        return findMatch(p, true, true);
+    }
+
+    @Override
+    public boolean allMatch(Predicate<T> p) {
+
+        return findMatch(p, false, false);
+    }
+
+    public boolean findMatch(Predicate<T> p, boolean value, boolean result) {
+
+        for (T t : this)
+            if (p.test(t) == value)
+                return result;
+
+        return !result;
+    }
+
+    @Override
     public Iterator<T> iterator() {
-        return get().iterator();
+
+        if (calculated != null) {
+            return calculated.iterator();
+        }
+
+        logger.info("Producing iterator with " + ts.size() + " transformations");
+
+        return new Iterator<T>() {
+
+            final Iterator<?> it = collection.iterator();
+
+            T next = getNext();
+            boolean hasNext;
+
+            @Override
+            public boolean hasNext() {
+                return hasNext;
+            }
+
+            @Override
+            public T next() {
+                T currentNext = next;
+                next = getNext();
+                return currentNext;
+            }
+
+            private T getNext() {
+
+                while(it.hasNext()) {
+
+                    Object x = it.next();
+                    boolean include = true;
+
+                    for (Transformation t : ts) {
+
+                        if (t instanceof MapTransformation) {
+                            Function map = ((MapTransformation) t).getFunction();
+                            x = map.apply(x);
+
+                        } else if (t instanceof FilterTransformation) {
+
+                            Predicate predicate = ((FilterTransformation) t).getPredicate();
+                            if (!predicate.test(x)) {
+                                include = false;
+                                break;
+                            }
+                        } else {
+                            throw new ClassCastException("Unexpected transformation type: " + t.getClass());
+                        }
+                    }
+
+                    if (include) {
+                        hasNext = true;
+                        return (T) x;
+                    }
+                }
+
+                hasNext = false;
+                return null;
+            }
+        };
     }
 
     @Override
@@ -77,35 +158,13 @@ public class EnhancedCollectionImpl<T> extends AbstractCollection<T> implements 
             return (Collection<T>) collection;
         }
 
-        logger.info("Producing collection with " + ts.size() + " transformations");
-
+        logger.info("Producing collection");
         final Collection<T> result = new ArrayList<>();
 
-        for (Object x : collection) {
+        final Iterator<T> iterator = iterator();
 
-            boolean include = true;
-
-            for (Transformation t : ts) {
-
-                if (t instanceof MapTransformation) {
-                    Function map = ((MapTransformation) t).getFunction();
-                    x = map.apply(x);
-
-                } else if (t instanceof FilterTransformation) {
-
-                    Predicate predicate = ((FilterTransformation) t).getPredicate();
-                    if (!predicate.test(x)) {
-                        include = false;
-                        break;
-                    }
-                } else {
-                    throw new ClassCastException("Unexpected transformation type: " + t.getClass());
-                }
-            }
-
-            if (include) {
-                result.add((T) x);
-            }
+        while (iterator.hasNext()) {
+            result.add(iterator.next());
         }
 
         if (immutable) {
