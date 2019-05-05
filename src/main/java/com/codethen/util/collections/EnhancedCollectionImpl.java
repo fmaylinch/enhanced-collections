@@ -16,6 +16,7 @@ public class EnhancedCollectionImpl<T> extends AbstractCollection<T> implements 
     private boolean immutable;
     private Collection<Transformation> ts;
 
+
     /**
      * @param collection  original collection to enhance
      * @param immutable   true if you want this object to be immutable (transformations return new objects)
@@ -30,6 +31,7 @@ public class EnhancedCollectionImpl<T> extends AbstractCollection<T> implements 
         this.ts = ts;
     }
 
+
     @Override
     public <R> EnhancedCollection<R> map(Function<T, R> f) {
         return getEnhancedCollectionAfterApplying(new MapTransformation(f));
@@ -40,15 +42,18 @@ public class EnhancedCollectionImpl<T> extends AbstractCollection<T> implements 
         return getEnhancedCollectionAfterApplying(new FilterTransformation(p));
     }
 
-    private <R> EnhancedCollection<R> getEnhancedCollectionAfterApplying(Transformation t) {
+    @Override
+    public Optional<T> first() {
 
-        if (immutable) {
-            return new EnhancedCollectionImpl<>(collection, true, append(ts, t));
-        } else {
-            this.ts.add(t);
-            this.calculated = null;
-            return (EnhancedCollection<R>) this;
-        }
+        final Iterator<T> it = iterator();
+        return it.hasNext() ? Optional.of(it.next()) : Optional.empty();
+    }
+
+    @Override
+    public Optional<T> first(Predicate<T> p) {
+
+        final Iterator<T> it = this.filter(p).iterator();
+        return it.hasNext() ? Optional.of(it.next()) : Optional.empty();
     }
 
     @Override
@@ -61,15 +66,6 @@ public class EnhancedCollectionImpl<T> extends AbstractCollection<T> implements 
     public boolean allMatch(Predicate<T> p) {
 
         return findMatch(p, false, false);
-    }
-
-    public boolean findMatch(Predicate<T> p, boolean value, boolean result) {
-
-        for (T t : this)
-            if (p.test(t) == value)
-                return result;
-
-        return !result;
     }
 
     @Override
@@ -175,6 +171,27 @@ public class EnhancedCollectionImpl<T> extends AbstractCollection<T> implements 
         }
 
         return result;
+    }
+
+
+    private <R> EnhancedCollection<R> getEnhancedCollectionAfterApplying(Transformation t) {
+
+        if (immutable) {
+            return new EnhancedCollectionImpl<>(collection, true, append(ts, t));
+        } else {
+            this.ts.add(t);
+            this.calculated = null;
+            return (EnhancedCollection<R>) this;
+        }
+    }
+
+    private boolean findMatch(Predicate<T> p, boolean value, boolean result) {
+
+        for (T t : this)
+            if (p.test(t) == value)
+                return result;
+
+        return !result;
     }
 
     /**

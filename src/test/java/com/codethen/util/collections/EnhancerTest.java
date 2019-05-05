@@ -2,8 +2,12 @@ package com.codethen.util.collections;
 
 import org.junit.Test;
 
+import javax.swing.text.html.Option;
 import java.util.Collection;
+import java.util.Optional;
 
+import static com.codethen.util.collections.Enhancer.immutable;
+import static com.codethen.util.collections.Enhancer.mutable;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -13,7 +17,7 @@ public class EnhancerTest {
     @Test
     public void mapAndFilterImmutable() {
 
-        final EnhancedCollection<Integer> list = Enhancer.enhance(asList(2, 4, 5, 3, 1));
+        final EnhancedCollection<Integer> list = immutable(asList(2, 4, 5, 3, 1));
 
         Collection<Integer> result = list
                 .map(x -> x + 1)
@@ -27,7 +31,7 @@ public class EnhancerTest {
     @Test
     public void mapAndFilterMutable() {
 
-        final EnhancedCollection<Integer> list = Enhancer.enhance(asList(2, 4, 5, 3, 1), false);
+        final EnhancedCollection<Integer> list = mutable(asList(2, 4, 5, 3, 1));
 
         Collection<Integer> result = list
                 .map(x -> x + 1)
@@ -41,7 +45,7 @@ public class EnhancerTest {
     @Test
     public void reuseMiddleResult() {
 
-        final EnhancedCollection<Integer> list = Enhancer.enhance(asList(2, 4, 5, 3, 1, 2));
+        final EnhancedCollection<Integer> list = immutable(asList(2, 4, 5, 3, 1, 2));
 
         EnhancedCollection<Integer> middleResult = list
                 .map(x -> x + 1)
@@ -55,7 +59,7 @@ public class EnhancerTest {
     @Test
     public void mutableEnhancedCollection() {
 
-        final EnhancedCollection<Integer> list = Enhancer.enhance(asList(2, 4, 5, 3, 1, 2), false);
+        final EnhancedCollection<Integer> list = mutable(asList(2, 4, 5, 3, 1, 2));
 
         list.map(x -> x + 1).filter(x -> x % 3 == 0); // list gets changed
 
@@ -67,7 +71,7 @@ public class EnhancerTest {
     @Test
     public void anyOrAllMatch() {
 
-        EnhancedCollection<Integer> list = Enhancer.enhance(asList(2, 4, 5, 3, 1, 2));
+        EnhancedCollection<Integer> list = immutable(asList(2, 4, 5, 3, 1, 2));
 
         assertThat(list.anyMatch(x -> x == 5), is(true));
         assertThat(list.anyMatch(x -> x == 6), is(false));
@@ -81,5 +85,16 @@ public class EnhancerTest {
         assertThat(list2.anyMatch(x -> x == 1), is(false));
         assertThat(list2.allMatch(x -> x >= 3), is(true));
         assertThat(list2.allMatch(x -> x == 3), is(false));
+    }
+
+    @Test
+    public void first() {
+
+        EnhancedCollection<String> list = immutable(asList("dog", "cat", "horse", "ant", "crocodile"));
+
+        assertThat(list.filter(w -> w.length() > 3).first(), is(Optional.of("horse")));
+        assertThat(list.filter(w -> w.length() < 3).first(), is(Optional.empty()));
+        assertThat(list.first(w -> w.length() > 5), is(Optional.of("crocodile")));
+        assertThat(list.first(w -> w.length() < 3), is(Optional.empty()));
     }
 }

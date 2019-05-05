@@ -4,6 +4,14 @@ import java.util.Collection;
 
 public class Enhancer {
 
+    public static <T> EnhancedCollection<T> immutable(Collection<T> collection) {
+        return enhance(collection, true);
+    }
+
+    public static <T> EnhancedCollection<T> mutable(Collection<T> collection) {
+        return enhance(collection, false);
+    }
+
     /** Returns an immutable {@link EnhancedCollection} (see {@link #enhance(Collection, boolean)})*/
     public static <T> EnhancedCollection<T> enhance(Collection<T> collection) {
         return enhance(collection, true);
