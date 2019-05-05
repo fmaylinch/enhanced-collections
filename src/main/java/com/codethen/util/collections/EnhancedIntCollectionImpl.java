@@ -15,6 +15,16 @@ public class EnhancedIntCollectionImpl extends EnhancedCollectionImpl<Integer> i
     }
 
     @Override
+    public Optional<Integer> max() {
+        return reduce(Math::max);
+    }
+
+    @Override
+    public Optional<Integer> min() {
+        return reduce(Math::min);
+    }
+
+    @Override
     public Optional<Double> average() {
 
         final int[] sumAndCount = new int[2];

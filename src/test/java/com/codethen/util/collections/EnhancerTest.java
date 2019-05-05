@@ -126,12 +126,16 @@ public class EnhancerTest {
     @Test
     public void toInt() {
 
-        EnhancedIntCollection ints = immutable(asList(1, 2, 3, 4, 5))
+        EnhancedIntCollection ints = immutable(asList(2, 3, 1, 5, 4))
                 .map(x -> x + 1)
                 .filter(x -> x % 2 == 0)
                 .toInt(x -> x);
 
+        assertThat( ints, is(asList(4, 2, 6)) );
+
         assertThat( ints.sum(), is(12) );
         assertThat( ints.average(), is(Optional.of(4.0)) );
+        assertThat( ints.max(), is(Optional.of(6)) );
+        assertThat( ints.min(), is(Optional.of(2)) );
     }
 }
