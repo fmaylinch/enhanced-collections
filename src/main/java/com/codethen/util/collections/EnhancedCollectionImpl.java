@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -40,6 +41,37 @@ public class EnhancedCollectionImpl<T> extends AbstractCollection<T> implements 
     @Override
     public EnhancedCollection<T> filter(Predicate<T> p) {
         return getEnhancedCollectionAfterApplying(new FilterTransformation(p));
+    }
+
+    @Override
+    public Optional<T> reduce(BiFunction<T, T, T> op) {
+
+        final Iterator<T> it = iterator();
+
+        if (!it.hasNext()) {
+            return Optional.empty();
+        }
+
+        T result = it.next();
+
+        while (it.hasNext()) {
+            result = op.apply(result, it.next());
+        }
+
+        return Optional.of(result);
+    }
+
+    @Override
+    public T fold(T zeroValue, BiFunction<T,T,T> op) {
+
+        T result = zeroValue;
+
+        final Iterator<T> it = iterator();
+        while (it.hasNext()) {
+            result = op.apply(result, it.next());
+        }
+
+        return result;
     }
 
     @Override

@@ -97,4 +97,30 @@ public class EnhancerTest {
         assertThat(list.first(w -> w.length() > 5), is(Optional.of("crocodile")));
         assertThat(list.first(w -> w.length() < 3), is(Optional.empty()));
     }
+
+    @Test
+    public void reduce() {
+
+        assertThat( immutable(asList(1, 2, 3, 4, 5)).reduce(Integer::sum), is(Optional.of(15)) );
+        assertThat( immutable(asList("the", "dog", "is", "here")).reduce((a,b) -> a+b),
+                is(Optional.of("thedogishere")) );
+
+        assertThat( immutable(asList(1, 2, 3, 4, 5))
+                        .filter(x -> x < 0)
+                        .reduce(Integer::sum),
+                is(Optional.empty()) );
+    }
+
+    @Test
+    public void fold() {
+
+        assertThat( immutable(asList(1, 2, 3, 4, 5)).fold(0, Integer::sum), is(15) );
+        assertThat( immutable(asList(1, 2, 3, 4, 5)).fold(10, Integer::sum), is(25) );
+        assertThat( immutable(asList(4, 1, 2, 5)).fold(1, (a,b) -> a*b), is(40) );
+
+        assertThat( immutable(asList(1, 2, 3, 4, 5))
+                        .filter(x -> x < 0)
+                        .fold(0, Integer::sum),
+                is(0) );
+    }
 }
