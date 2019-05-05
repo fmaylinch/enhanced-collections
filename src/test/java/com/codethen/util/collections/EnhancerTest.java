@@ -2,7 +2,6 @@ package com.codethen.util.collections;
 
 import org.junit.Test;
 
-import javax.swing.text.html.Option;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -122,5 +121,17 @@ public class EnhancerTest {
                         .filter(x -> x < 0)
                         .fold(0, Integer::sum),
                 is(0) );
+    }
+
+    @Test
+    public void toInt() {
+
+        EnhancedIntCollection ints = immutable(asList(1, 2, 3, 4, 5))
+                .map(x -> x + 1)
+                .filter(x -> x % 2 == 0)
+                .toInt(x -> x);
+
+        assertThat( ints.sum(), is(12) );
+        assertThat( ints.average(), is(Optional.of(4.0)) );
     }
 }

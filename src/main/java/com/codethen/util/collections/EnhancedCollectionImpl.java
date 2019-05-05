@@ -26,12 +26,11 @@ public class EnhancedCollectionImpl<T> extends AbstractCollection<T> implements 
         this(collection, immutable, immutable ? Collections.emptyList() : new ArrayList<>());
     }
 
-    private EnhancedCollectionImpl(Collection<?> collection, boolean immutable, Collection<Transformation> ts) {
+    EnhancedCollectionImpl(Collection<?> collection, boolean immutable, Collection<Transformation> ts) {
         this.collection = collection;
         this.immutable = immutable;
         this.ts = ts;
     }
-
 
     @Override
     public <R> EnhancedCollection<R> map(Function<T, R> f) {
@@ -41,6 +40,11 @@ public class EnhancedCollectionImpl<T> extends AbstractCollection<T> implements 
     @Override
     public EnhancedCollection<T> filter(Predicate<T> p) {
         return getEnhancedCollectionAfterApplying(new FilterTransformation(p));
+    }
+
+    @Override
+    public EnhancedIntCollection toInt(Function<T, Integer> f) {
+        return new EnhancedIntCollectionImpl(collection, immutable, append(ts, new MapTransformation(f)));
     }
 
     @Override
